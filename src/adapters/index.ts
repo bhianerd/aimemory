@@ -3,6 +3,9 @@ import { ClaudeAdapter } from './claude.js';
 import { CodexAdapter } from './codex.js';
 import { WindsurfAdapter } from './windsurf.js';
 import { CopilotAdapter } from './copilot.js';
+import { ConductorAdapter } from './conductor.js';
+import { AiderAdapter } from './aider.js';
+import { ClineAdapter } from './cline.js';
 import type { BaseAdapter } from './base.js';
 
 type AdapterConstructor = new (projectDir: string) => BaseAdapter;
@@ -13,6 +16,9 @@ const ADAPTER_MAP: Record<string, AdapterConstructor> = {
   codex: CodexAdapter,
   windsurf: WindsurfAdapter,
   copilot: CopilotAdapter,
+  conductor: ConductorAdapter,
+  aider: AiderAdapter,
+  cline: ClineAdapter,
 };
 
 export function getAdapters(projectDir: string, toolNames: string[]): BaseAdapter[] {

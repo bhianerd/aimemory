@@ -2,21 +2,24 @@
 
 **One memory. Every AI coding tool. Always in sync.**
 
-You use Cursor at work, Claude Code on side projects, Copilot for quick fixes, and Windsurf when you feel like it. Each one learns your preferences separately. You end up repeating yourself — *"use tabs not spaces," "we use pnpm here," "always prefer named exports"* — over and over, to every tool, in every project.
+You use Cursor at work, Claude Code on side projects, Conductor to run agents in parallel, Copilot for quick fixes, Windsurf when you feel like it, and Aider from the terminal. Each one learns your preferences separately. You end up repeating yourself — *"use tabs not spaces," "we use pnpm here," "always prefer named exports"* — over and over, to every tool, in every project.
 
 aimemory fixes that. It maintains a single canonical memory file and syncs it everywhere, so every AI coding tool knows what you've taught any of them.
 
 ```
 $ aimemory add "Always use TypeScript strict mode"
 ✓ Added: - Always use TypeScript strict mode
-✓ Synced cursor → .cursor/rules/aimemory.mdc
-✓ Synced claude → CLAUDE.md
-✓ Synced codex → AGENTS.md
-✓ Synced windsurf → .windsurfrules
-✓ Synced copilot → .github/copilot-instructions.md
+✓ Synced cursor     → .cursor/rules/aimemory.mdc
+✓ Synced claude     → CLAUDE.md
+✓ Synced codex      → AGENTS.md
+✓ Synced windsurf   → .windsurfrules
+✓ Synced copilot    → .github/copilot-instructions.md
+✓ Synced conductor  → .context/aimemory.md
+✓ Synced aider      → .aider/instructions.md
+✓ Synced cline      → .clinerules
 ```
 
-One command. Five tools updated.
+One command. Eight tools updated.
 
 ## Supported Tools
 
@@ -27,6 +30,9 @@ One command. Five tools updated.
 | **OpenAI Codex** | `AGENTS.md` | Markdown |
 | **Windsurf** | `.windsurfrules` | Plain text rules |
 | **GitHub Copilot** | `.github/copilot-instructions.md` | Markdown |
+| **Conductor** | `.context/aimemory.md` | Markdown |
+| **Aider** | `.aider/instructions.md` | Markdown |
+| **Cline / Roo Code** | `.clinerules` | Markdown |
 
 Each tool gets its preferences in the format it natively understands. No hacks, no workarounds.
 
@@ -59,7 +65,7 @@ aimemory status
 
 ### `aimemory init`
 
-Scans your project for AI tool configs (`.cursor/`, `CLAUDE.md`, `.windsurfrules`, `.github/`, etc.) and creates a `.aimemory.json` config listing the detected tools. Also creates the global canonical memory at `~/.aimemory/memory.md` if it doesn't exist.
+Scans your project for AI tool configs (`.cursor/`, `CLAUDE.md`, `.windsurfrules`, `.github/`, `.context/`, `.aider/`, `.clinerules`, etc.) and creates a `.aimemory.json` config listing the detected tools. Also creates the global canonical memory at `~/.aimemory/memory.md` if it doesn't exist.
 
 ### `aimemory sync`
 
@@ -71,7 +77,7 @@ aimemory sync
 
 ### `aimemory watch`
 
-Runs `sync` automatically whenever any memory file changes. Uses `fs.watch` with 500ms debounce. Leave it running in a terminal while you work.
+Runs `sync` automatically whenever any memory file changes. Uses `fs.watch` with 500ms debounce. Leave it running in a terminal while you work — or set it up as a startup daemon (macOS LaunchAgent included).
 
 ```bash
 aimemory watch
@@ -85,13 +91,16 @@ Shows a table of every tool, whether its config file exists, and how many prefer
 ℹ Canonical: ~/.aimemory/memory.md
 ℹ Sections: 2, Bullets: 5
 
-Tool       | Path                              | Exists | Bullets
------------|-----------------------------------|--------|--------
-cursor     | .cursor/rules/aimemory.mdc        | yes    | 5
-claude     | CLAUDE.md                         | yes    | 5
-codex      | AGENTS.md                         | yes    | 5
-windsurf   | .windsurfrules                    | yes    | 5
-copilot    | .github/copilot-instructions.md   | yes    | 5
+Tool        | Path                              | Exists | Bullets
+------------|-----------------------------------|--------|--------
+cursor      | .cursor/rules/aimemory.mdc        | yes    | 5
+claude      | CLAUDE.md                         | yes    | 5
+codex       | AGENTS.md                         | yes    | 5
+windsurf    | .windsurfrules                    | yes    | 5
+copilot     | .github/copilot-instructions.md   | yes    | 5
+conductor   | .context/aimemory.md              | yes    | 5
+aider       | .aider/instructions.md            | yes    | 5
+cline       | .clinerules                       | yes    | 5
 ```
 
 ### `aimemory add <text>`
@@ -136,6 +145,9 @@ Each tool has an adapter that handles format translation:
 
 - **Cursor**: Wraps markdown in `.mdc` frontmatter (`alwaysApply: true`) so Cursor auto-loads it
 - **Windsurf**: Converts between plain text lines and markdown bullets
+- **Conductor**: Writes to `.context/` so preferences are available to all parallel agents
+- **Aider**: Markdown in `.aider/instructions.md`
+- **Cline / Roo Code**: Direct markdown in `.clinerules`
 - **Claude Code, Codex, Copilot**: Native markdown pass-through
 
 Adding a new tool is one file — implement `name`, `relPath`, and optionally `toMarkdown()`/`fromMarkdown()`.
@@ -158,6 +170,9 @@ src/
 │   ├── codex.ts           # AGENTS.md
 │   ├── windsurf.ts        # .windsurfrules
 │   ├── copilot.ts         # .github/copilot-instructions.md
+│   ├── conductor.ts       # .context/aimemory.md
+│   ├── aider.ts           # .aider/instructions.md
+│   ├── cline.ts           # .clinerules
 │   └── index.ts           # Adapter registry
 └── commands/
     ├── init.ts
@@ -170,7 +185,7 @@ src/
 ## Development
 
 ```bash
-git clone <repo>
+git clone https://github.com/bhianerd/aimemory.git
 cd aimemory
 npm install
 npm run build        # Compile with tsup
